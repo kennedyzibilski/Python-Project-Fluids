@@ -1,0 +1,92 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def calc_K_values(P, T, Pc, Tc, omega):
+    exponent = 5.37 * (1 + omega) * (1 - Tc / T)
+    K = (Pc / P) * np.exp(exponent)
+    return K
+
+def rr_function(beta, z, K):
+    total = 0.0
+    
+    for i in range(len(z)):
+        numerator = z[i] * (K[i] - 1)
+        denominator = 1 + beta * (K[i] - 1)
+        total += numerator / denominator
+    
+    return total
+
+def find_beta(z, K):
+
+    lower = 0.0
+    upper = 1.0
+
+    tolerance = 1e-6
+    max_steps = 100
+
+    for step in range(max_steps):
+
+        mid = (lower + upper) / 2
+        f_mid = rr_function(mid, z, K)
+
+        if abs(f_mid) < tolerance:
+            return mid
+
+        f_low = rr_function(lower, z, K)
+
+        if f_low * f_mid < 0:
+            upper = mid
+        else:
+            lower = mid
+
+    return mid  # fallback
+
+def compute_compositions(beta, z, K):
+
+    x = np.zeros(len(z))
+    y = np.zeros(len(z))
+
+    for i in range(len(z)):
+        x[i] = z[i] / (1 + beta * (K[i] - 1))
+        y[i] = K[i] * x[i]
+
+    return x, y
+
+# Input data
+z = np.array([0.61, 0.28, 0.11])
+
+Pc = np.array([4599, 3796, 2110])
+Tc = np.array([190.6, 425.2, 617.7])
+omega = np.array([0.011, 0.200, 0.490])
+
+P = 1700
+T = 341
+
+# Step 1: K values
+K = calc_K_values(P, T, Pc, Tc, omega)
+
+# Step 2: Solve for beta
+beta_v = find_beta(z, K)
+
+# Step 3: Compositions
+x, y = compute_compositions(beta_v, z, K)
+
+# Output
+print("Beta (vapor fraction):", round(beta_v, 4))
+print("Liquid composition x:", np.round(x, 4))
+print("Vapor composition y:", np.round(y, 4))
+print("Liquid amount:", round(1 - beta_v, 4))
+print("Vapor amount:", round(beta_v, 4))
+
+beta_range = np.linspace(0, 1, 100)
+f_values = []
+
+for b in beta_range:
+    f_values.append(rr_function(b, z, K))
+
+plt.plot(beta_range, f_values)
+plt.axhline(y=0)
+plt.xlabel("Beta")
+plt.ylabel("RR Function")
+plt.title("Rachford-Rice Behavior")
+plt.show()
