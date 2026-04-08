@@ -14,8 +14,6 @@ Pc = np.array ([4600, 3800, 2108])
 Tc = np.array ([190.6, 425.2, 617.7]) 
 omega = np.array ([0.008, 0.193, 0.49])
 
-R = 8.314 # Gas constant (J/mol*K)
-
 
 # ----------------------------
 # Wilson K-values
@@ -23,7 +21,7 @@ R = 8.314 # Gas constant (J/mol*K)
 def wilson_K(T, P, Tc, Pc, omega):
     K = []
   
-    for in range(len(Tc)):
+    for i in range(len(Tc)):
       K_i = (Pc[i] /P) * np.exp(5.373 * (1 + omega[i]) * (1 - Tc[i] /T))
       K.append(K_i)
  
@@ -58,7 +56,6 @@ def solve_rr(z, K):
 
         if f_mid > 0:
             beta_high = beta_mid
-
         else: 
             beta_low = beta_mid
           
@@ -91,10 +88,10 @@ V = beta_v
 L = 1 - V
 
 # ----------------------------
-# Main Calculation
+# Output
 # ----------------------------   
-print("Vapor Fraction", round(V, 2))
-print("Liquid Fraction", round(L, 2))
+print("Beta V", round(V, 2))
+print("Beta L", round(L, 2))
 
 print("Liquid Composition", np.round(x, 2))
 print("Vapor Composition", np.round(y, 2))
@@ -115,4 +112,3 @@ plt.ylabel("RR Function")
 plt.title( "RR Function v Beta V")
 plt.grid()
 plt.show()
-
